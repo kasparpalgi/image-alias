@@ -1,6 +1,8 @@
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { wordList } from '$lib/words';
+	import type { Word } from '$lib/words';
 
 	interface Player {
 		id: number;
@@ -11,11 +13,6 @@
 	type GameState = 'setup' | 'handoff' | 'showing' | 'gameEnd';
 	type ImageMode = 'local' | 'word';
 
-	interface Word {
-		et: string;
-		en: string;
-	}
-
 	let gameState = $state<GameState>('setup');
 	let players = $state<Player[]>([]);
 	let currentRound = $state(0);
@@ -23,99 +20,10 @@
 	let currentImage = $state<string | null>(null);
 	let scores = $state<Record<number, number>>({});
 	let imageMode = $state<ImageMode>('local');
-	let wordInput = $state('');
 	let availableImages = $state<string[]>([]);
 	let usedImages = $state<string[]>([]);
 	let selectedWord = $state<Word | null>(null);
 	let usedWords = $state<Word[]>([]);
-
-	// Predefined words for kids in Estonian with English translations
-	const wordList = [
-		{ et: 'kass', en: 'cat' },
-		{ et: 'koer', en: 'dog' },
-		{ et: 'auto', en: 'car' },
-		{ et: 'maja', en: 'house' },
-		{ et: 'puu', en: 'tree' },
-		{ et: 'lill', en: 'flower' },
-		{ et: 'päike', en: 'sun' },
-		{ et: 'kuu', en: 'moon' },
-		{ et: 'täht', en: 'star' },
-		{ et: 'lind', en: 'bird' },
-		{ et: 'kalad', en: 'fish' },
-		{ et: 'elevant', en: 'elephant' },
-		{ et: 'lõvi', en: 'lion' },
-		{ et: 'tiiger', en: 'tiger' },
-		{ et: 'jänes', en: 'rabbit' },
-		{ et: 'karupoeg', en: 'bear' },
-		{ et: 'lehm', en: 'cow' },
-		{ et: 'hobune', en: 'horse' },
-		{ et: 'lammas', en: 'sheep' },
-		{ et: 'siga', en: 'pig' },
-		{ et: 'kana', en: 'chicken' },
-		{ et: 'part', en: 'duck' },
-		{ et: 'lilled', en: 'flowers' },
-		{ et: 'mets', en: 'forest' },
-		{ et: 'meri', en: 'sea' },
-		{ et: 'mäed', en: 'mountains' },
-		{ et: 'jõgi', en: 'river' },
-		{ et: 'järv', en: 'lake' },
-		{ et: 'rand', en: 'beach' },
-		{ et: 'sõber', en: 'friend' },
-		{ et: 'perekond', en: 'family' },
-		{ et: 'beebi', en: 'baby' },
-		{ et: 'laps', en: 'child' },
-		{ et: 'õpetaja', en: 'teacher' },
-		{ et: 'õun', en: 'apple' },
-		{ et: 'banaani', en: 'banana' },
-		{ et: 'apelsin', en: 'orange' },
-		{ et: 'pirn', en: 'pear' },
-		{ et: 'maasikad', en: 'strawberries' },
-		{ et: 'virsikud', en: 'peaches' },
-		{ et: 'leib', en: 'bread' },
-		{ et: 'piim', en: 'milk' },
-		{ et: 'juust', en: 'cheese' },
-		{ et: 'pizza', en: 'pizza' },
-		{ et: 'burger', en: 'burger' },
-		{ et: 'tort', en: 'cake' },
-		{ et: 'jalgpall', en: 'football' },
-		{ et: 'korvpall', en: 'basketball' },
-		{ et: 'ratas', en: 'bicycle' },
-		{ et: 'rulluisud', en: 'skateboard' },
-		{ et: 'suusad', en: 'skis' },
-		{ et: 'raamat', en: 'book' },
-		{ et: 'pliiats', en: 'pencil' },
-		{ et: 'värvid', en: 'colors' },
-		{ et: 'maalim', en: 'painting' },
-		{ et: 'muusika', en: 'music' },
-		{ et: 'kitarr', en: 'guitar' },
-		{ et: 'arvuti', en: 'computer' },
-		{ et: 'telefon', en: 'phone' },
-		{ et: 'kaamera', en: 'camera' },
-		{ et: 'televiisor', en: 'television' },
-		{ et: 'raadio', en: 'radio' },
-		{ et: 'lennuk', en: 'airplane' },
-		{ et: 'laev', en: 'ship' },
-		{ et: 'rong', en: 'train' },
-		{ et: 'buss', en: 'bus' },
-		{ et: 'takso', en: 'taxi' },
-		{ et: 'mootorratas', en: 'motorcycle' },
-		{ et: 'linnud', en: 'birds' },
-		{ et: 'liblikas', en: 'butterfly' },
-		{ et: 'mesilane', en: 'bee' },
-		{ et: 'ämblik', en: 'spider' },
-		{ et: 'sipelgas', en: 'ant' },
-		{ et: 'jõulupuu', en: 'christmas tree' },
-		{ et: 'kingitus', en: 'gift' },
-		{ et: 'küünal', en: 'candle' },
-		{ et: 'õhupallid', en: 'balloons' },
-		{ et: 'talv', en: 'winter' },
-		{ et: 'suvi', en: 'summer' },
-		{ et: 'sügis', en: 'autumn' },
-		{ et: 'kevad', en: 'spring' },
-		{ et: 'vihm', en: 'rain' },
-		{ et: 'lumi', en: 'snow' },
-		{ et: 'välk', en: 'lightning' }
-	];
 
 	const playerColors = [
 		'bg-red-400',
@@ -144,11 +52,6 @@
 		} catch (error) {
 			console.log('API ei ole saadaval, kasuta sõna otsingut');
 		}
-
-		// If no images loaded, default to empty (user will use word mode)
-		if (availableImages.length === 0) {
-			availableImages = [];
-		}
 	}
 
 	function addPlayer() {
@@ -174,7 +77,6 @@
 			alert('Vaja on vähemalt 2 mängijat!');
 			return;
 		}
-		// Allow game to start even without local images (can use word mode)
 		gameState = 'handoff';
 		currentPlayerIndex = 0;
 		usedImages = [];
@@ -183,10 +85,8 @@
 
 	async function showImage() {
 		if (imageMode === 'local' && availableImages.length > 0) {
-			// Get unused images
 			const unused = availableImages.filter((img) => !usedImages.includes(img));
 
-			// If all images used, reset
 			if (unused.length === 0) {
 				usedImages = [];
 				currentImage = availableImages[Math.floor(Math.random() * availableImages.length)];
@@ -201,10 +101,8 @@
 			alert('Kohalikud pildid puuduvad! Palun vali "Otsi sõna järgi" režiim.');
 			return;
 		} else if (imageMode === 'word') {
-			// Get unused words
 			const unusedWords = wordList.filter((word) => !usedWords.some((used) => used.et === word.et));
 
-			// If all words used, reset
 			let randomWord: Word;
 			if (unusedWords.length === 0) {
 				usedWords = [];
@@ -213,14 +111,12 @@
 				randomWord = unusedWords[Math.floor(Math.random() * unusedWords.length)];
 			}
 
-			// Mark word as used
 			usedWords.push(randomWord);
 			selectedWord = randomWord;
 
 			const searchTerm = randomWord.en;
 
 			try {
-				// Use our API endpoint that searches for actual images
 				const response = await fetch(`/api/search-image?q=${encodeURIComponent(searchTerm)}`);
 				const data = await response.json();
 
@@ -232,7 +128,9 @@
 			} catch (error) {
 				console.error('Image search failed:', error);
 				// Fallback: show placeholder with the word
-				currentImage = `https://placehold.co/800x600/purple/white?text=${encodeURIComponent(searchTerm)}`;
+				currentImage = `https://placehold.co/800x600/purple/white?text=${encodeURIComponent(
+					searchTerm
+				)}`;
 			}
 		}
 
@@ -267,11 +165,6 @@
 		usedImages = [];
 		usedWords = [];
 	}
-
-	$effect(() => {
-		// Cleanup effect - no mutations here
-		return () => {};
-	});
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 p-4">
@@ -421,7 +314,7 @@
 						>
 							{players[currentPlayerIndex].name}
 						</span>
-						seletab!
+						kord!
 					</p>
 				</div>
 
