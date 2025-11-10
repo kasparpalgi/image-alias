@@ -11,6 +11,11 @@
 	type GameState = 'setup' | 'handoff' | 'showing' | 'gameEnd';
 	type ImageMode = 'local' | 'word';
 
+	interface Word {
+		et: string;
+		en: string;
+	}
+
 	let gameState = $state<GameState>('setup');
 	let players = $state<Player[]>([]);
 	let currentRound = $state(0);
@@ -21,6 +26,96 @@
 	let wordInput = $state('');
 	let availableImages = $state<string[]>([]);
 	let usedImages = $state<string[]>([]);
+	let selectedWord = $state<Word | null>(null);
+	let usedWords = $state<Word[]>([]);
+
+	// Predefined words for kids in Estonian with English translations
+	const wordList = [
+		{ et: 'kass', en: 'cat' },
+		{ et: 'koer', en: 'dog' },
+		{ et: 'auto', en: 'car' },
+		{ et: 'maja', en: 'house' },
+		{ et: 'puu', en: 'tree' },
+		{ et: 'lill', en: 'flower' },
+		{ et: 'päike', en: 'sun' },
+		{ et: 'kuu', en: 'moon' },
+		{ et: 'täht', en: 'star' },
+		{ et: 'lind', en: 'bird' },
+		{ et: 'kalad', en: 'fish' },
+		{ et: 'elevant', en: 'elephant' },
+		{ et: 'lõvi', en: 'lion' },
+		{ et: 'tiiger', en: 'tiger' },
+		{ et: 'jänes', en: 'rabbit' },
+		{ et: 'karupoeg', en: 'bear' },
+		{ et: 'lehm', en: 'cow' },
+		{ et: 'hobune', en: 'horse' },
+		{ et: 'lammas', en: 'sheep' },
+		{ et: 'siga', en: 'pig' },
+		{ et: 'kana', en: 'chicken' },
+		{ et: 'part', en: 'duck' },
+		{ et: 'lilled', en: 'flowers' },
+		{ et: 'mets', en: 'forest' },
+		{ et: 'meri', en: 'sea' },
+		{ et: 'mäed', en: 'mountains' },
+		{ et: 'jõgi', en: 'river' },
+		{ et: 'järv', en: 'lake' },
+		{ et: 'rand', en: 'beach' },
+		{ et: 'sõber', en: 'friend' },
+		{ et: 'perekond', en: 'family' },
+		{ et: 'beebi', en: 'baby' },
+		{ et: 'laps', en: 'child' },
+		{ et: 'õpetaja', en: 'teacher' },
+		{ et: 'õun', en: 'apple' },
+		{ et: 'banaani', en: 'banana' },
+		{ et: 'apelsin', en: 'orange' },
+		{ et: 'pirn', en: 'pear' },
+		{ et: 'maasikad', en: 'strawberries' },
+		{ et: 'virsikud', en: 'peaches' },
+		{ et: 'leib', en: 'bread' },
+		{ et: 'piim', en: 'milk' },
+		{ et: 'juust', en: 'cheese' },
+		{ et: 'pizza', en: 'pizza' },
+		{ et: 'burger', en: 'burger' },
+		{ et: 'tort', en: 'cake' },
+		{ et: 'jalgpall', en: 'football' },
+		{ et: 'korvpall', en: 'basketball' },
+		{ et: 'ratas', en: 'bicycle' },
+		{ et: 'rulluisud', en: 'skateboard' },
+		{ et: 'suusad', en: 'skis' },
+		{ et: 'raamat', en: 'book' },
+		{ et: 'pliiats', en: 'pencil' },
+		{ et: 'värvid', en: 'colors' },
+		{ et: 'maalim', en: 'painting' },
+		{ et: 'muusika', en: 'music' },
+		{ et: 'kitarr', en: 'guitar' },
+		{ et: 'arvuti', en: 'computer' },
+		{ et: 'telefon', en: 'phone' },
+		{ et: 'kaamera', en: 'camera' },
+		{ et: 'televiisor', en: 'television' },
+		{ et: 'raadio', en: 'radio' },
+		{ et: 'lennuk', en: 'airplane' },
+		{ et: 'laev', en: 'ship' },
+		{ et: 'rong', en: 'train' },
+		{ et: 'buss', en: 'bus' },
+		{ et: 'takso', en: 'taxi' },
+		{ et: 'mootorratas', en: 'motorcycle' },
+		{ et: 'linnud', en: 'birds' },
+		{ et: 'liblikas', en: 'butterfly' },
+		{ et: 'mesilane', en: 'bee' },
+		{ et: 'ämblik', en: 'spider' },
+		{ et: 'sipelgas', en: 'ant' },
+		{ et: 'jõulupuu', en: 'christmas tree' },
+		{ et: 'kingitus', en: 'gift' },
+		{ et: 'küünal', en: 'candle' },
+		{ et: 'õhupallid', en: 'balloons' },
+		{ et: 'talv', en: 'winter' },
+		{ et: 'suvi', en: 'summer' },
+		{ et: 'sügis', en: 'autumn' },
+		{ et: 'kevad', en: 'spring' },
+		{ et: 'vihm', en: 'rain' },
+		{ et: 'lumi', en: 'snow' },
+		{ et: 'välk', en: 'lightning' }
+	];
 
 	const playerColors = [
 		'bg-red-400',
@@ -41,12 +136,17 @@
 		try {
 			const response = await fetch('/api/images');
 			if (response.ok) {
-				availableImages = await response.json();
-			} else {
-				availableImages = [];
+				const images = await response.json();
+				if (images && images.length > 0) {
+					availableImages = images;
+				}
 			}
 		} catch (error) {
-			console.error('Piltide laadimine ebaõnnestus:', error);
+			console.log('API ei ole saadaval, kasuta sõna otsingut');
+		}
+
+		// If no images loaded, default to empty (user will use word mode)
+		if (availableImages.length === 0) {
 			availableImages = [];
 		}
 	}
@@ -74,16 +174,14 @@
 			alert('Vaja on vähemalt 2 mängijat!');
 			return;
 		}
-		if (imageMode === 'local' && availableImages.length === 0) {
-			alert('Palun lisa pilte kausta /static/images või vali sõna otsing!');
-			return;
-		}
+		// Allow game to start even without local images (can use word mode)
 		gameState = 'handoff';
 		currentPlayerIndex = 0;
 		usedImages = [];
+		usedWords = [];
 	}
 
-	function showImage() {
+	async function showImage() {
 		if (imageMode === 'local' && availableImages.length > 0) {
 			// Get unused images
 			const unused = availableImages.filter((img) => !usedImages.includes(img));
@@ -99,8 +197,43 @@
 			if (currentImage) {
 				usedImages.push(currentImage);
 			}
-		} else if (imageMode === 'word' && wordInput.trim()) {
-			currentImage = `https://source.unsplash.com/800x600/?${encodeURIComponent(wordInput.trim())}`;
+		} else if (imageMode === 'local' && availableImages.length === 0) {
+			alert('Kohalikud pildid puuduvad! Palun vali "Otsi sõna järgi" režiim.');
+			return;
+		} else if (imageMode === 'word') {
+			// Get unused words
+			const unusedWords = wordList.filter((word) => !usedWords.some((used) => used.et === word.et));
+
+			// If all words used, reset
+			let randomWord: Word;
+			if (unusedWords.length === 0) {
+				usedWords = [];
+				randomWord = wordList[Math.floor(Math.random() * wordList.length)];
+			} else {
+				randomWord = unusedWords[Math.floor(Math.random() * unusedWords.length)];
+			}
+
+			// Mark word as used
+			usedWords.push(randomWord);
+			selectedWord = randomWord;
+
+			const searchTerm = randomWord.en;
+
+			try {
+				// Use our API endpoint that searches for actual images
+				const response = await fetch(`/api/search-image?q=${encodeURIComponent(searchTerm)}`);
+				const data = await response.json();
+
+				if (data.imageUrl) {
+					currentImage = data.imageUrl;
+				} else {
+					throw new Error('No image returned');
+				}
+			} catch (error) {
+				console.error('Image search failed:', error);
+				// Fallback: show placeholder with the word
+				currentImage = `https://placehold.co/800x600/purple/white?text=${encodeURIComponent(searchTerm)}`;
+			}
 		}
 
 		currentRound++;
@@ -132,6 +265,7 @@
 		currentPlayerIndex = 0;
 		scores = Object.fromEntries(players.map((p) => [p.id, 0]));
 		usedImages = [];
+		usedWords = [];
 	}
 
 	$effect(() => {
@@ -144,8 +278,8 @@
 	<div class="mx-auto max-w-4xl">
 		<!-- Header -->
 		<div class="mt-4 mb-8 text-center">
-			<h1 class="mb-2 text-6xl font-bold text-white drop-shadow-lg">🎭🎨🎭🎨 Pildi alias</h1>
-			<p class="text-2xl text-white drop-shadow">Kirjelda pilti ilma ütlemata otse, mis pildil!</p>
+			<h1 class="mb-2 text-6xl font-bold text-white drop-shadow-lg">🎭 Pildi Alias 🎨</h1>
+			<p class="text-2xl text-white drop-shadow">Kirjelda ilma sõna ütlemata!</p>
 		</div>
 
 		{#if gameState === 'setup'}
@@ -200,19 +334,22 @@
 						</div>
 
 						{#if imageMode === 'word'}
-							<input
-								type="text"
-								bind:value={wordInput}
-								placeholder="Sisesta sõna (nt 'elevant', 'auto', 'lill')"
-								class="mb-4 w-full rounded-xl border-4 border-purple-300 p-4 text-xl"
-							/>
+							<div class="mb-4 rounded-xl border-4 border-green-400 bg-green-100 p-4">
+								<p class="text-center font-bold text-green-800">
+									✨ Sõnad valitakse automaatselt listist
+								</p>
+								<p class="text-center text-sm text-green-700">
+									Iga voor saab uue juhusliku sõna ({wordList.length} sõna saadaval)
+								</p>
+							</div>
 						{/if}
 
 						{#if imageMode === 'local' && availableImages.length === 0}
 							<div class="mb-4 rounded-xl border-4 border-yellow-400 bg-yellow-100 p-4">
-								<p class="font-bold text-yellow-800">⚠️ Pilte ei leitud!</p>
-								<p class="text-yellow-700">
-									Lisa .png pilte kausta /static/images või kasuta sõna otsingut.
+								<p class="font-bold text-yellow-800">⚠️ Kohalikud pildid puuduvad</p>
+								<p class="text-sm text-yellow-700">
+									Kohalikud pildid töötavad ainult arenduskeskkonnas. Vercelis kasuta "Otsi sõna
+									järgi" režiimi.
 								</p>
 							</div>
 						{/if}
@@ -231,7 +368,7 @@
 		{#if gameState === 'handoff'}
 			<!-- Hand Off Screen -->
 			<div class="rounded-3xl bg-white p-8 text-center shadow-2xl">
-				<h2 class="mb-8 text-5xl font-bold text-purple-600">Järka seletaja</h2>
+				<h2 class="mb-8 text-5xl font-bold text-purple-600">Anna telefon</h2>
 				<div
 					class="{players[currentPlayerIndex]
 						.color} mb-8 scale-105 transform rounded-2xl p-8 text-white shadow-2xl"
@@ -294,14 +431,19 @@
 						<img
 							src={currentImage}
 							alt="Pilt"
-							class="max-h-96 w-full rounded-xl object-contain shadow-lg"
+							class="mb-4 max-h-96 w-full rounded-xl object-contain shadow-lg"
 						/>
+					{/if}
+					{#if selectedWord}
+						<div class="rounded-xl bg-purple-600 px-6 py-4 text-center text-white">
+							<p class="text-4xl font-bold uppercase">{selectedWord.et}</p>
+						</div>
 					{/if}
 				</div>
 
 				<div class="mb-8 rounded-xl border-4 border-yellow-400 bg-yellow-100 p-4">
 					<p class="text-center text-lg font-bold text-yellow-800">
-						💡 Kirjelda, aga ära ütle sõna, mis mildil!
+						💡 Kirjelda, aga ära ütle sõna!
 					</p>
 				</div>
 
