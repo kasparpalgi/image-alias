@@ -34,21 +34,31 @@
 		'bg-teal-400'
 	];
 
-	onMount(() => {
-		loadLocalImages();
+	onMount(async () => {
+		await loadLocalImages();
 	});
 
-	function loadLocalImages() {
-		// In real app, you'd fetch this from an API endpoint that reads the static folder
-		// For now, we'll use a placeholder that you can populate
-		availableImages = [
-			'/images/cat.png',
-			'/images/dog.png',
-			'/images/car.png',
-			'/images/tree.png',
-			'/images/house.png'
-			// Add your actual image paths here
-		];
+	async function loadLocalImages() {
+		try {
+			// Try to fetch from API endpoint
+			const response = await fetch('/api/images');
+			if (response.ok) {
+				availableImages = await response.json();
+			} else {
+				// Fallback: manually list your images here
+				availableImages = [
+					// Add your actual image paths here, e.g.:
+					// '/images/cat.png',
+					// '/images/dog.png',
+				];
+			}
+		} catch (error) {
+			console.error('Failed to load images:', error);
+			// Fallback: manually list your images here
+			availableImages = [
+				// Add your actual image paths here
+			];
+		}
 	}
 
 	function addPlayer() {

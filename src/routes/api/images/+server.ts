@@ -1,18 +1,20 @@
 import { json } from '@sveltejs/kit';
-import fs from 'fs';
-import path from 'path';
+import { readdir } from 'fs/promises';
+import { join } from 'path';
 
 export async function GET() {
-	const imagesDir = path.join(process.cwd(), 'static', 'images');
-
 	try {
-		const files = fs
-			.readdirSync(imagesDir)
-			.filter((file) => file.endsWith('.png'))
+		const imagesDir = join(process.cwd(), 'static', 'images');
+		const files = await readdir(imagesDir);
+
+		// Filter only PNG files and create full paths
+		const imageFiles = files
+			.filter((file) => file.toLowerCase().endsWith('.png'))
 			.map((file) => `/images/${file}`);
 
-		return json(files);
+		return json(imageFiles);
 	} catch (error) {
-		return json([]);
+		console.error('Error reading images directory:', error);
+		return json([], { status: 500 });
 	}
 }
