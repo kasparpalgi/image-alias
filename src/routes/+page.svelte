@@ -2,17 +2,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { wordList } from '$lib/words';
-	import type { Word } from '$lib/words';
+	import { playerColors } from '$lib/assets/colors';
 	import imageUrls from '$lib/assets/images.json';
-
-	interface Player {
-		id: number;
-		name: string;
-		color: string;
-	}
-
-	type GameState = 'setup' | 'handoff' | 'showing' | 'gameEnd';
-	type ImageMode = 'local' | 'word';
+	import type { Word } from '$lib/words';
+	import type { GameState, ImageMode, Player } from '$lib/types';
 
 	let gameState = $state<GameState>('setup');
 	let players = $state<Player[]>([]);
@@ -27,31 +20,16 @@
 	let usedWords = $state<Word[]>([]);
 	let currentImageName = $state<string | null>(null);
 
-	const playerColors = [
-		'bg-red-400',
-		'bg-blue-400',
-		'bg-green-400',
-		'bg-yellow-400',
-		'bg-purple-400',
-		'bg-pink-400',
-		'bg-orange-400',
-		'bg-teal-400'
-	];
-
 	onMount(async () => {
 		loadS3Images();
 	});
 
 	function loadS3Images() {
-		// Convert the imageUrls object to an array of URLs
 		availableImages = Object.values(imageUrls);
 		console.log(`Loaded ${availableImages.length} images from S3`);
 	}
 
 	function getImageNameFromUrl(url: string): string {
-		// Extract the image name from the S3 URL
-		// Example: "https://s3-api.servicehost.io/alias/88ed7416-4a6f-4f8d-a2be-d85ad6ecfaef-AED.png"
-		// Should return "AED"
 		const match = url.match(/-([A-Z]+)\.png$/i);
 		return match ? match[1] : '';
 	}
@@ -174,14 +152,12 @@
 
 <div class="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 p-4">
 	<div class="mx-auto max-w-4xl">
-		<!-- Header -->
 		<div class="mt-4 mb-8 text-center">
 			<h1 class="mb-2 text-6xl font-bold text-white drop-shadow-lg">🎭 Pildi Alias 🎨</h1>
 			<p class="text-2xl text-white drop-shadow">Kirjelda ilma sõna ütlemata!</p>
 		</div>
 
 		{#if gameState === 'setup'}
-			<!-- Setup Screen -->
 			<div class="rounded-3xl bg-white p-8 shadow-2xl">
 				<h2 class="mb-6 text-center text-4xl font-bold text-purple-600">Lisa mängijad</h2>
 
@@ -281,7 +257,6 @@
 				</div>
 
 				{#if currentRound > 0}
-					<!-- Show scores during game -->
 					<div class="mb-8">
 						<h3 class="mb-4 text-2xl font-bold text-gray-700">Seis:</h3>
 						<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -314,7 +289,6 @@
 		{/if}
 
 		{#if gameState === 'showing'}
-			<!-- Showing Image Screen -->
 			<div class="rounded-3xl bg-white p-8 shadow-2xl">
 				<div class="mb-6 text-center">
 					<h2 class="text-3xl font-bold text-purple-600">Voor {currentRound}</h2>
@@ -329,7 +303,6 @@
 					</p>
 				</div>
 
-				<!-- Image -->
 				<div class="mb-8 rounded-2xl bg-gray-100 p-4">
 					{#if currentImage}
 						<img
@@ -355,7 +328,6 @@
 					</p>
 				</div>
 
-				<!-- Guessing Buttons -->
 				<h3 class="mb-4 text-center text-2xl font-bold text-purple-600">Kes arvas ära?</h3>
 				<div class="mb-6 grid grid-cols-2 gap-4">
 					{#each players.filter((p) => p.id !== players[currentPlayerIndex].id) as player (player.id)}
@@ -378,7 +350,6 @@
 		{/if}
 
 		{#if gameState === 'gameEnd'}
-			<!-- Game End Screen -->
 			<div class="rounded-3xl bg-white p-8 text-center shadow-2xl">
 				<h2 class="mb-8 text-5xl font-bold text-purple-600">🎉 Mäng läbi! 🎉</h2>
 
