@@ -1,0 +1,24 @@
+{
+  "name": "image-upload",
+  "version": "1.0.0",
+  "description": "Upload all images from /images folder to Min.io S3 and create JSON of image names and URLs",
+  "homepage": "https://github.com/kasparpalgi/image-alias#readme",
+  "bugs": {
+    "url": "https://github.com/kasparpalgi/image-alias/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kasparpalgi/image-alias.git"
+  },
+  "license": "ISC",
+  "author": "Kaspar L. Palgi",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "minio": "^8.0.6"
+  }
+}
