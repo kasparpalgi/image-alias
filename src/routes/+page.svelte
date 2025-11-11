@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { wordList } from '$lib/words';
 	import type { Word } from '$lib/words';
+	import imageUrls from '$lib/assets/images.json';
 
 	interface Player {
 		id: number;
@@ -37,21 +38,13 @@
 	];
 
 	onMount(async () => {
-		await loadLocalImages();
+		loadS3Images();
 	});
 
-	async function loadLocalImages() {
-		try {
-			const response = await fetch('/api/images');
-			if (response.ok) {
-				const images = await response.json();
-				if (images && images.length > 0) {
-					availableImages = images;
-				}
-			}
-		} catch (error) {
-			console.log('API ei ole saadaval, kasuta sõna otsingut');
-		}
+	function loadS3Images() {
+		// Convert the imageUrls object to an array of URLs
+		availableImages = Object.values(imageUrls);
+		console.log(`Loaded ${availableImages.length} images from S3`);
 	}
 
 	function addPlayer() {
@@ -214,7 +207,7 @@
 									? 'bg-purple-600 text-white'
 									: 'bg-gray-200 text-gray-700'}"
 							>
-								📁 Kohalikud pildid
+								📁 Enda pildid
 							</button>
 							<button
 								onclick={() => (imageMode = 'word')}
@@ -222,7 +215,7 @@
 									? 'bg-purple-600 text-white'
 									: 'bg-gray-200 text-gray-700'}"
 							>
-								🔍 Otsi sõna järgi
+								🔍 Netist otsib
 							</button>
 						</div>
 
@@ -232,17 +225,24 @@
 									✨ Sõnad valitakse automaatselt listist
 								</p>
 								<p class="text-center text-sm text-green-700">
-									Iga voor saab uue juhusliku sõna ({wordList.length} sõna saadaval)
+									Iga voor saab uue juhusliku sõna. ({wordList.length} sõna.)
+								</p>
+							</div>
+						{/if}
+
+						{#if imageMode === 'local' && availableImages.length > 0}
+							<div class="mb-4 rounded-xl border-4 border-green-400 bg-green-100 p-4">
+								<p class="text-center font-bold text-green-800">
+									✅ {availableImages.length} pilti laetud S3-st
 								</p>
 							</div>
 						{/if}
 
 						{#if imageMode === 'local' && availableImages.length === 0}
 							<div class="mb-4 rounded-xl border-4 border-yellow-400 bg-yellow-100 p-4">
-								<p class="font-bold text-yellow-800">⚠️ Kohalikud pildid puuduvad</p>
+								<p class="font-bold text-yellow-800">⚠️ S3 pildid puuduvad</p>
 								<p class="text-sm text-yellow-700">
-									Kohalikud pildid töötavad ainult arenduskeskkonnas. Vercelis kasuta "Otsi sõna
-									järgi" režiimi.
+									Kontrolli, et images.json fail oleks õigesti seadistatud.
 								</p>
 							</div>
 						{/if}
