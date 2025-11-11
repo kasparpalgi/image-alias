@@ -9,10 +9,6 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 	}
 
 	try {
-		// Use DuckDuckGo image search (no API key needed)
-		const searchUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&t=h_&iax=images&ia=images`;
-
-		// Try to get images from Wikimedia Commons (free and open)
 		const wikimediaUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srnamespace=6&format=json&origin=*`;
 
 		const response = await fetch(wikimediaUrl);
