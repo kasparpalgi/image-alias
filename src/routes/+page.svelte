@@ -25,6 +25,7 @@
 	let usedImages = $state<string[]>([]);
 	let selectedWord = $state<Word | null>(null);
 	let usedWords = $state<Word[]>([]);
+	let currentImageName = $state<string | null>(null);
 
 	const playerColors = [
 		'bg-red-400',
@@ -45,6 +46,14 @@
 		// Convert the imageUrls object to an array of URLs
 		availableImages = Object.values(imageUrls);
 		console.log(`Loaded ${availableImages.length} images from S3`);
+	}
+
+	function getImageNameFromUrl(url: string): string {
+		// Extract the image name from the S3 URL
+		// Example: "https://s3-api.servicehost.io/alias/88ed7416-4a6f-4f8d-a2be-d85ad6ecfaef-AED.png"
+		// Should return "AED"
+		const match = url.match(/-([A-Z]+)\.png$/i);
+		return match ? match[1] : '';
 	}
 
 	function addPlayer() {
@@ -89,7 +98,9 @@
 
 			if (currentImage) {
 				usedImages.push(currentImage);
+				currentImageName = getImageNameFromUrl(currentImage);
 			}
+			selectedWord = null;
 		} else if (imageMode === 'local' && availableImages.length === 0) {
 			alert('Kohalikud pildid puuduvad! Palun vali "Otsi sõna järgi" režiim.');
 			return;
@@ -106,6 +117,7 @@
 
 			usedWords.push(randomWord);
 			selectedWord = randomWord;
+			currentImageName = null;
 
 			const searchTerm = randomWord.en;
 
@@ -215,7 +227,7 @@
 									? 'bg-purple-600 text-white'
 									: 'bg-gray-200 text-gray-700'}"
 							>
-								🔍 Netist otsib
+								🔍 Netist sõna järgi
 							</button>
 						</div>
 
@@ -225,7 +237,7 @@
 									✨ Sõnad valitakse automaatselt listist
 								</p>
 								<p class="text-center text-sm text-green-700">
-									Iga voor saab uue juhusliku sõna. ({wordList.length} sõna.)
+									Iga voor saab uue juhusliku sõna ({wordList.length} sõna saadaval)
 								</p>
 							</div>
 						{/if}
@@ -233,14 +245,14 @@
 						{#if imageMode === 'local' && availableImages.length > 0}
 							<div class="mb-4 rounded-xl border-4 border-green-400 bg-green-100 p-4">
 								<p class="text-center font-bold text-green-800">
-									✅ {availableImages.length} pilti laetud S3-st
+									✅ Laetud {availableImages.length} pilti
 								</p>
 							</div>
 						{/if}
 
 						{#if imageMode === 'local' && availableImages.length === 0}
 							<div class="mb-4 rounded-xl border-4 border-yellow-400 bg-yellow-100 p-4">
-								<p class="font-bold text-yellow-800">⚠️ S3 pildid puuduvad</p>
+								<p class="font-bold text-yellow-800">⚠️ Enda pildid puuduvad</p>
 								<p class="text-sm text-yellow-700">
 									Kontrolli, et images.json fail oleks õigesti seadistatud.
 								</p>
@@ -259,9 +271,8 @@
 		{/if}
 
 		{#if gameState === 'handoff'}
-			<!-- Hand Off Screen -->
 			<div class="rounded-3xl bg-white p-8 text-center shadow-2xl">
-				<h2 class="mb-8 text-5xl font-bold text-purple-600">Anna telefon</h2>
+				<h2 class="mb-8 text-5xl font-bold text-purple-600">Kelle kord:</h2>
 				<div
 					class="{players[currentPlayerIndex]
 						.color} mb-8 scale-105 transform rounded-2xl p-8 text-white shadow-2xl"
@@ -330,6 +341,10 @@
 					{#if selectedWord}
 						<div class="rounded-xl bg-purple-600 px-6 py-4 text-center text-white">
 							<p class="text-4xl font-bold uppercase">{selectedWord.et}</p>
+						</div>
+					{:else if currentImageName}
+						<div class="rounded-xl bg-purple-600 px-6 py-4 text-center text-white">
+							<p class="text-4xl font-bold uppercase">{currentImageName}</p>
 						</div>
 					{/if}
 				</div>
