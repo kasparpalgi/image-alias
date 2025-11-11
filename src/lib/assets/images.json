@@ -196,5 +196,17 @@
   "TELEFON": "https://s3-api.servicehost.io/alias/db73df31-d2fc-4922-ba1f-afc9d6ba9a82-TELEFON.png",
   "VANN": "https://s3-api.servicehost.io/alias/a2afafbc-5c8e-4092-aa99-93a075528dc1-VANN.png",
   "VETSUPABER": "https://s3-api.servicehost.io/alias/b7e57afb-d32a-4c60-a4fc-335a22f03aa3-VETSUPABER.png",
-  "ŠOKOLAAD": "https://s3-api.servicehost.io/alias/bbb20a92-4018-4644-9c89-699b1459d0d1-%C5%A0OKOLAAD.png"
+  "ŠOKOLAAD": "https://s3-api.servicehost.io/alias/bbb20a92-4018-4644-9c89-699b1459d0d1-%C5%A0OKOLAAD.png",
+  "AHI": "https://s3-api.servicehost.io/alias/c066c099-e946-46be-b33e-4a01064abdce-AHI.png",
+  "ILUTULESTIK": "https://s3-api.servicehost.io/alias/34ed410b-4d33-4ffb-b237-5f725e118769-ILUTULESTIK.png",
+  "KAMM": "https://s3-api.servicehost.io/alias/573f55e7-86c4-4f14-ab37-13cac54151a5-KAMM.png",
+  "LAEV": "https://s3-api.servicehost.io/alias/56ee92bc-6571-49c4-925e-f776e9a2111b-LAEV.png",
+  "LUTT": "https://s3-api.servicehost.io/alias/230abd27-f670-405f-aaf5-d3af9a6c2746-LUTT.png",
+  "MÄHKMED": "https://s3-api.servicehost.io/alias/62fa555c-0bcc-49f0-ba52-b1ce356756fa-M%C3%84HKMED.png",
+  "PADI": "https://s3-api.servicehost.io/alias/b798adfa-00d0-41cd-a3b3-9e0181b239ad-PADI.png",
+  "PESUMASIN": "https://s3-api.servicehost.io/alias/2b87f7a1-28d4-42fd-9d6c-348f469ecd2f-PESUMASIN.png",
+  "RAKETT": "https://s3-api.servicehost.io/alias/61c24d78-7a9f-482a-878e-a65cc7f21bba-RAKETT.png",
+  "RATAS": "https://s3-api.servicehost.io/alias/9c909b28-2516-4380-bb2b-6e51483f3544-RATAS.png",
+  "ROBOT": "https://s3-api.servicehost.io/alias/83e33144-00f1-4e93-b82a-2b4359fa4a62-ROBOT.png",
+  "TOLMUIMEJA": "https://s3-api.servicehost.io/alias/9ff9ce81-950d-4a1b-887f-555a398b1fd0-TOLMUIMEJA.png"
 }
