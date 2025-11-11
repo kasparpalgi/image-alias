@@ -7,6 +7,39 @@
 	import type { Word } from '$lib/words';
 	import type { GameState, ImageMode, Player } from '$lib/types';
 
+	function setCookie(name: string, value: string, days: number) {
+		let expires = '';
+		if (days) {
+			const date = new Date();
+			date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+			expires = '; expires=' + date.toUTCString();
+		}
+
+		if (typeof document !== 'undefined') {
+			document.cookie = name + '=' + (value || '') + expires + '; path=/; SameSite=Lax';
+		}
+	}
+
+	function getCookie(name: string): string | null {
+		if (typeof document === 'undefined') {
+			return null;
+		}
+		const nameEQ = name + '=';
+		const ca = document.cookie.split(';');
+		for (let i = 0; i < ca.length; i++) {
+			let c = ca[i];
+			while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+			if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+		}
+		return null;
+	}
+
+	function eraseCookie(name: string) {
+		if (typeof document !== 'undefined') {
+			document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+		}
+	}
+
 	let gameState = $state<GameState>('setup');
 	let players = $state<Player[]>([]);
 	let currentRound = $state(0);
@@ -25,7 +58,24 @@
 
 	onMount(async () => {
 		loadS3Images();
+		loadUsedImagesFromCookie();
 	});
+
+	function loadUsedImagesFromCookie() {
+		const storedImages = getCookie('usedImages');
+		if (storedImages) {
+			try {
+				const parsedImages = JSON.parse(storedImages);
+				if (Array.isArray(parsedImages)) {
+					usedImages = parsedImages;
+					console.log(`Loaded ${usedImages.length} used images from cookie.`);
+				}
+			} catch (e) {
+				console.error('Failed to parse usedImages cookie:', e);
+				usedImages = []; // Reset if cookie is corrupt
+			}
+		}
+	}
 
 	function loadS3Images() {
 		availableImages = Object.values(imageUrls);
@@ -40,7 +90,7 @@
 	function addPlayer() {
 		const playerName = prompt('Sisesta mängija nimi:');
 		if (playerName && playerName.trim()) {
-			const isSmallKid = confirm('Kas see on väike laps? (saab 4 punkti arvamise eest)');
+			const isSmallKid = confirm('Kas see on väike laps? (saab 4 punkti arvamise eest). OK = jah, on. Cancel = ei ole väike laps.');
 			const newPlayer: Player = {
 				id: Date.now(),
 				name: playerName.trim(),
@@ -78,7 +128,6 @@
 		}
 
 		gameState = 'handoff';
-		usedImages = [];
 		usedWords = [];
 	}
 
@@ -87,7 +136,9 @@
 			const unused = availableImages.filter((img) => !usedImages.includes(img));
 
 			if (unused.length === 0) {
+				alert('Kõik pildid on näidatud! Alustame otsast peale.');
 				usedImages = [];
+				eraseCookie('usedImages');
 				currentImage = availableImages[Math.floor(Math.random() * availableImages.length)];
 			} else {
 				currentImage = unused[Math.floor(Math.random() * unused.length)];
@@ -95,6 +146,7 @@
 
 			if (currentImage) {
 				usedImages.push(currentImage);
+				setCookie('usedImages', JSON.stringify(usedImages), 365);
 				currentImageName = getImageNameFromUrl(currentImage);
 			}
 			selectedWord = null;
@@ -186,6 +238,7 @@
 		currentPlayerIndex = 0;
 		scores = Object.fromEntries(players.map((p) => [p.id, 0]));
 		usedImages = [];
+		eraseCookie('usedImages');
 		usedWords = [];
 		nextRegularPlayerIndex = 0;
 		nextSmallKidIndex = 0;
@@ -249,7 +302,8 @@
 									</span>
 								</label>
 								<p class="mt-2 text-sm text-blue-700">
-									Kui väike laps tahab rohkem seletada, mis pildil, siis tšekka see ja iga teine kord seletab väike laps
+									Kui väike laps tahab rohkem seletada, mis pildil, siis tšekka see ja iga teine
+									kord seletab väike laps
 								</p>
 							</div>
 						{/if}
@@ -289,7 +343,10 @@
 						{#if imageMode === 'local' && availableImages.length > 0}
 							<div class="mb-4 rounded-xl border-4 border-green-400 bg-green-100 p-4">
 								<p class="text-center font-bold text-green-800">
-									✅ Laetud {availableImages.length} pilti
+									✅ Laetud {availableImages.length} pilti.
+									<span class="block text-sm text-green-700"
+										>Juba nähtud: {usedImages.length} / {availableImages.length}</span
+									>
 								</p>
 							</div>
 						{/if}
