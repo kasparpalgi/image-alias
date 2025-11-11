@@ -184,5 +184,17 @@
   "ÕHUPALLID": "https://s3-api.servicehost.io/alias/37e2d30a-4f46-4ebf-941c-88e0beddf9d0-%C3%95HUPALLID.png",
   "ÖÖKULL": "https://s3-api.servicehost.io/alias/52d65695-e066-4a49-b859-4c8298a8a939-%C3%96%C3%96KULL.png",
   "JASSU": "https://s3-api.servicehost.io/alias/7694b1c8-3882-4226-8bbd-11bf761b0e07-JASSU.png",
-  "KOERAPARK": "https://s3-api.servicehost.io/alias/51741cd5-9f09-48f5-b002-f9fb184e6b2d-KOERAPARK.jpg"
+  "KOERAPARK": "https://s3-api.servicehost.io/alias/51741cd5-9f09-48f5-b002-f9fb184e6b2d-KOERAPARK.jpg",
+  "AHJUROOP": "https://s3-api.servicehost.io/alias/bd9017bd-b0a3-4a53-8a10-b2aaf4734257-AHJUROOP.png",
+  "ELEKTRITÕUKS": "https://s3-api.servicehost.io/alias/a4e17c1f-c9f3-4152-ae04-597e70237bb0-ELEKTRIT%C3%95UKS.png",
+  "KELK": "https://s3-api.servicehost.io/alias/7caa9395-5a6b-47dc-8a43-afd4889377d0-KELK.png",
+  "KOMM": "https://s3-api.servicehost.io/alias/f364c8d8-8a4f-4386-be84-669f6b6ea6a7-KOMM.png",
+  "MURUNIIDUK": "https://s3-api.servicehost.io/alias/bd6f772b-fcf0-4322-9192-6ce76897bfe5-MURUNIIDUK.png",
+  "PORGAND": "https://s3-api.servicehost.io/alias/b2de693e-dc9f-4d0e-b38c-e221de0eee2c-PORGAND.png",
+  "SAUN": "https://s3-api.servicehost.io/alias/8809fe87-88e0-45f5-a3bd-1952f6718b36-SAUN.png",
+  "SÜDA": "https://s3-api.servicehost.io/alias/26d61dc4-1889-4ee8-bc85-16c0cb49c9c6-S%C3%9CDA.png",
+  "TELEFON": "https://s3-api.servicehost.io/alias/db73df31-d2fc-4922-ba1f-afc9d6ba9a82-TELEFON.png",
+  "VANN": "https://s3-api.servicehost.io/alias/a2afafbc-5c8e-4092-aa99-93a075528dc1-VANN.png",
+  "VETSUPABER": "https://s3-api.servicehost.io/alias/b7e57afb-d32a-4c60-a4fc-335a22f03aa3-VETSUPABER.png",
+  "ŠOKOLAAD": "https://s3-api.servicehost.io/alias/bbb20a92-4018-4644-9c89-699b1459d0d1-%C5%A0OKOLAAD.png"
 }

@@ -19,6 +19,9 @@
 	let selectedWord = $state<Word | null>(null);
 	let usedWords = $state<Word[]>([]);
 	let currentImageName = $state<string | null>(null);
+	let smallKidsExplainEverySecond = $state(false);
+	let nextRegularPlayerIndex = $state(0);
+	let nextSmallKidIndex = $state(0);
 
 	onMount(async () => {
 		loadS3Images();
@@ -37,10 +40,12 @@
 	function addPlayer() {
 		const playerName = prompt('Sisesta mängija nimi:');
 		if (playerName && playerName.trim()) {
+			const isSmallKid = confirm('Kas see on väike laps? (saab 4 punkti arvamise eest)');
 			const newPlayer: Player = {
 				id: Date.now(),
 				name: playerName.trim(),
-				color: playerColors[players.length % playerColors.length]
+				color: playerColors[players.length % playerColors.length],
+				isSmallKid
 			};
 			players.push(newPlayer);
 			scores[newPlayer.id] = 0;
@@ -57,8 +62,22 @@
 			alert('Vaja on vähemalt 2 mängijat!');
 			return;
 		}
+
+		nextRegularPlayerIndex = 0;
+		nextSmallKidIndex = 0;
+
+		if (
+			smallKidsExplainEverySecond &&
+			players.some((p) => p.isSmallKid) &&
+			players.some((p) => !p.isSmallKid)
+		) {
+			const firstSmallKidIndex = players.findIndex((p) => p.isSmallKid);
+			currentPlayerIndex = firstSmallKidIndex !== -1 ? firstSmallKidIndex : 0;
+		} else {
+			currentPlayerIndex = 0;
+		}
+
 		gameState = 'handoff';
-		currentPlayerIndex = 0;
 		usedImages = [];
 		usedWords = [];
 	}
@@ -122,7 +141,9 @@
 	}
 
 	function playerGuessed(guesserId: number) {
-		scores[guesserId]++;
+		const guesser = players.find((p) => p.id === guesserId);
+		const pointsToAdd = guesser?.isSmallKid ? 4 : 1;
+		scores[guesserId] += pointsToAdd;
 		scores = { ...scores };
 		nextPlayer();
 	}
@@ -132,7 +153,26 @@
 	}
 
 	function nextPlayer() {
-		currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+		const smallKids = players.filter((p) => p.isSmallKid);
+		const regularPlayers = players.filter((p) => !p.isSmallKid);
+
+		if (smallKidsExplainEverySecond && smallKids.length > 0 && regularPlayers.length > 0) {
+			const currentPlayer = players[currentPlayerIndex];
+			let nextPlayer: Player;
+
+			if (currentPlayer.isSmallKid) {
+				nextPlayer = regularPlayers[nextRegularPlayerIndex];
+				nextRegularPlayerIndex = (nextRegularPlayerIndex + 1) % regularPlayers.length;
+			} else {
+				nextPlayer = smallKids[nextSmallKidIndex];
+				nextSmallKidIndex = (nextSmallKidIndex + 1) % smallKids.length;
+			}
+
+			currentPlayerIndex = players.findIndex((p) => p.id === nextPlayer.id);
+		} else {
+			currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+		}
+
 		gameState = 'handoff';
 	}
 
@@ -147,6 +187,8 @@
 		scores = Object.fromEntries(players.map((p) => [p.id, 0]));
 		usedImages = [];
 		usedWords = [];
+		nextRegularPlayerIndex = 0;
+		nextSmallKidIndex = 0;
 	}
 </script>
 
@@ -166,7 +208,15 @@
 						<div
 							class="flex items-center justify-between {player.color} mb-3 rounded-xl p-4 text-white shadow-lg"
 						>
-							<span class="text-2xl font-bold">{player.name}</span>
+							<div>
+								<span class="text-2xl font-bold">{player.name}</span>
+								{#if player.isSmallKid}
+									<span
+										class="ml-2 rounded-full bg-yellow-400 px-2 py-1 text-sm font-bold text-yellow-900"
+										>👶 Väike laps (4p)</span
+									>
+								{/if}
+							</div>
 							<button
 								onclick={() => removePlayer(player.id)}
 								class="rounded-lg bg-red-600 px-4 py-2 font-bold hover:bg-red-700"
@@ -186,6 +236,24 @@
 
 				{#if players.length >= 2}
 					<div class="mt-6 border-t-4 border-purple-200 pt-6">
+						{#if players.some((p) => p.isSmallKid) && players.some((p) => !p.isSmallKid)}
+							<div class="mb-6 rounded-xl bg-blue-100 p-4">
+								<label class="flex cursor-pointer items-center gap-3">
+									<input
+										type="checkbox"
+										bind:checked={smallKidsExplainEverySecond}
+										class="h-5 w-5 cursor-pointer"
+									/>
+									<span class="text-lg font-bold text-blue-800">
+										👶 Väikesed lapsed seletavad igal teisel korral
+									</span>
+								</label>
+								<p class="mt-2 text-sm text-blue-700">
+									Kui väike laps tahab rohkem seletada, mis pildil, siis tšekka see ja iga teine kord seletab väike laps
+								</p>
+							</div>
+						{/if}
+
 						<h3 class="mb-4 text-2xl font-bold text-purple-600">Vali piltide allikas:</h3>
 
 						<div class="mb-4 flex gap-4">
@@ -336,6 +404,9 @@
 							class="{player.color} transform rounded-xl px-6 py-4 text-xl font-bold text-white shadow-lg transition hover:scale-105"
 						>
 							{player.name}
+							{#if player.isSmallKid}
+								<span class="block text-sm">(+4p)</span>
+							{/if}
 						</button>
 					{/each}
 				</div>
